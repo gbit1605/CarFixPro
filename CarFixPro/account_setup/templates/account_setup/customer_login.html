@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block page_title %}Sign Up{% endblock %}
+{% block page_title %}Login{% endblock %}
 
 {% block content %}
-    <p>Account Registration</p>
+    <p>Customer Login</p>
     <form method="POST">
         {% csrf_token %}
         {% for field in form %}

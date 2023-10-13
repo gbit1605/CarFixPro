@@ -10,4 +10,8 @@ class CustomerRegistrationForm(forms.Form):
     phone = forms.CharField(max_length=10, label="Phone number")
     email = forms.EmailField(label="Email ID")
     credit_card_number = forms.CharField(max_length=16, label="Credit card number")
+    password = forms.CharField(max_length=32, required=True, widget=forms.PasswordInput)
 
+class CustomerLoginForm(forms.Form):
+    username = forms.EmailField(label="Your email is your username")
+    password = forms.CharField(max_length=32, required=True, widget=forms.PasswordInput)

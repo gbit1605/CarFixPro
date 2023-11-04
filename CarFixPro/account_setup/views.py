@@ -58,7 +58,7 @@ def customer_login(request):
             is_verified = pbkdf2_sha256.verify(passwd, stored_password)
             
             if is_verified:
-                return HttpResponseRedirect("/thank-you")
+                return HttpResponseRedirect("/customer_dashboard")
             return HttpResponseRedirect("/customer_login")
 
     else:
@@ -67,3 +67,6 @@ def customer_login(request):
     return render(request, "account_setup/customer_login.html", {
         "form": customer_login_form
     })
+
+def customer_dashboard(request):
+    return render(request, 'account_setup/home_page.html')

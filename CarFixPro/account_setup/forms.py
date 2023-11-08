@@ -15,3 +15,14 @@ class CustomerRegistrationForm(forms.Form):
 class CustomerLoginForm(forms.Form):
     username = forms.EmailField(label="Your email is your username")
     password = forms.CharField(max_length=32, required=True, widget=forms.PasswordInput)
+
+class AddVehicleForm(forms.Form):
+
+    CHOICES  = [('Sedan', 'Sedan'), ('SUV', 'SUV'), ('Hatchback', 'Hatchback'), ('Crossover', 'Crossover')]
+
+    vin = forms.CharField(max_length=17, label="VIN")
+    model = forms.CharField(max_length=50, label="Model")
+    year = forms.CharField(max_length=4, label="Year")
+    color = forms.CharField(max_length=10, label="Color")
+    mfg_company = forms.CharField(max_length=20, label="Brand")
+    vtype = forms.ChoiceField(choices=CHOICES, widget=forms.Select(attrs={'class':'form-control'}), label="Type")

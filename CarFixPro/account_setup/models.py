@@ -3,6 +3,8 @@ from passlib.hash import pbkdf2_sha256
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, MaxLengthValidator
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 import re
 
 # Create your models here.
@@ -77,4 +79,52 @@ class Appointment(models.Model):
     location = models.CharField(max_length=100)
     service_details = models.CharField(max_length=250)
     total_price = models.DecimalField(decimal_places=2, max_digits=8)
+    manager_start_approval = models.BooleanField(default=False)
+    manager_finish_approval = models.BooleanField(default=False)
 
+class AppointmentStatus(models.Model):
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
+    service_detail = models.CharField(max_length=250)
+    completed = models.BooleanField(default=False)
+
+@receiver(post_save, sender=Appointment)
+def create_appointment_status(sender, instance, created, **kwargs):
+    if created:
+        service_details_list = instance.service_details.split(', ')
+
+        for service_detail in service_details_list:
+            AppointmentStatus.objects.create(appointment=instance, service_detail=service_detail.strip())
+
+class ManagerInfo(models.Model):
+    fname = models.CharField(max_length=30)
+    lname = models.CharField(max_length=30)
+    address = models.TextField()
+    phone = models.CharField(max_length=10)
+    email_id = models.EmailField(primary_key=True, null=False)
+    acc_number = models.CharField(max_length=16)
+    salary = models.IntegerField()
+    SSN = models.CharField(max_length=9, validators=[MinLengthValidator(9), MaxLengthValidator(9)])
+
+    passwd = models.CharField(max_length=256, null=True)
+
+    def verify_password(self, p):
+        return pbkdf2_sha256.verify(p, self.passwd)
+
+class TechnicianInfo(models.Model):
+    SSN = models.CharField(max_length=9, validators=[MinLengthValidator(9), MaxLengthValidator(9)])
+    fname = models.CharField(max_length=30)
+    lname = models.CharField(max_length=30)
+    address = models.TextField()
+    phone = models.CharField(max_length=10)
+    email_id = models.EmailField(primary_key=True, null=False)
+    acc_number = models.CharField(max_length=16)
+    hourly_rate = models.IntegerField()
+    mngr = models.ForeignKey(ManagerInfo, on_delete=models.CASCADE)
+    hire_date = models.DateField()
+    location = models.ForeignKey(Location, on_delete=models.CASCADE)
+
+    passwd = models.CharField(max_length=256, null=True)
+
+    def verify_password(self, p):
+        return pbkdf2_sha256.verify(p, self.passwd)
+    

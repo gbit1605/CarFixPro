@@ -26,3 +26,34 @@ class AddVehicleForm(forms.Form):
     color = forms.CharField(max_length=10, label="Color")
     mfg_company = forms.CharField(max_length=20, label="Brand")
     vtype = forms.ChoiceField(choices=CHOICES, widget=forms.Select(attrs={'class':'form-control'}), label="Type")
+
+class BookAppointment(forms.Form):
+
+    CHOICES_SERVICES  = (('Maintenance and Repairs', 'Maintenance and Repairs'), 
+                        ('Diagnostic Services', 'Diagnostic Services'), 
+                        ('Body and Paint Services', 'Body and Paint Services'), 
+                        ('Detailing Services', 'Detailing Services'), 
+                        ('Customization Services', 'Customization Services'), 
+                        ('Towing and Recovery Services', 'Towing and Recovery Services'), 
+                        ('Pre-Purchase Inspection', 'Pre-Purchase Inspection'),
+                        ('Rental and Leasing Services', 'Rental and Leasing Services'),
+                        ('Consultation and Advice', 'Consultation and Advice'))
+
+    vehicle_details = forms.ChoiceField(choices=(), widget=forms.Select, label="Select your vehicle")
+    location_details = forms.ChoiceField(choices=(), widget=forms.Select, label="Select servicing location")
+    date = forms.DateField(label="Date of appointment")
+    services_details = forms.MultipleChoiceField(choices=CHOICES_SERVICES, widget=forms.CheckboxSelectMultiple, label="Select services")
+
+    def __init__(self, *args, **kwargs):
+        vehicle_choices = kwargs.pop('vehicle_choices', [])
+        location_choices = kwargs.pop('location_choices', [])
+
+        super(BookAppointment, self).__init__(*args, **kwargs)
+
+        default_option = ('', 'Select...')
+        vehicle_choices = [default_option] + vehicle_choices
+        location_choices = [default_option] + location_choices
+
+        self.fields['vehicle_details'].choices = vehicle_choices
+        self.fields['location_details'].choices = location_choices
+

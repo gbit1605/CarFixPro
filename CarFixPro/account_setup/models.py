@@ -46,14 +46,14 @@ class Location(models.Model):
 class Service(models.Model):
 
     CHOICES_SERVICES  = (('Maintenance and Repairs', 'Maintenance and Repairs'), 
-                ('Diagnostic Services', 'Diagnostic Services'), 
-                ('Body and Paint Services', 'Body and Paint Services'), 
-                ('Detailing Services', 'Detailing Services'), 
-                ('Customization Services', 'Customization Services'), 
-                ('Towing and Recovery Services', 'Towing and Recovery Services'), 
-                ('Pre-Purchase Inspection', 'Pre-Purchase Inspection'),
-                ('Rental and Leasing Services', 'Rental and Leasing Services'),
-                ('Consultation and Advice', 'Consultation and Advice'))
+                        ('Diagnostic Services', 'Diagnostic Services'), 
+                        ('Body and Paint Services', 'Body and Paint Services'), 
+                        ('Detailing Services', 'Detailing Services'), 
+                        ('Customization Services', 'Customization Services'), 
+                        ('Towing and Recovery Services', 'Towing and Recovery Services'), 
+                        ('Pre-Purchase Inspection', 'Pre-Purchase Inspection'),
+                        ('Rental and Leasing Services', 'Rental and Leasing Services'),
+                        ('Consultation and Advice', 'Consultation and Advice'))
     
     CHOICES_VTYPE  = (('Sedan', 'Sedan'), ('SUV', 'SUV'), ('Hatchback', 'Hatchback'), ('Crossover', 'Crossover'))
     
@@ -67,11 +67,14 @@ class Service(models.Model):
         ]
 
 
-# class Appointment(models.Model):
+class Appointment(models.Model):
 
-#     appointment_id = models.AutoField(primary_key=True)
-#     date = models.DateField()
-#     vehicle_id = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
-#     customer_email = models.ForeignKey(CustomerInfo, on_delete=models.CASCADE)
-#     lid = models.ForeignKey(Location, on_delete=models.CASCADE)
+    appointment_id = models.AutoField(primary_key=True)
+    date = models.DateField()
+    vehicle_id = models.CharField(max_length=17)
+    vehicletype = models.CharField(max_length=30)  
+    customer_email = models.ForeignKey(CustomerInfo, on_delete=models.CASCADE)
+    location = models.CharField(max_length=100)
+    service_details = models.CharField(max_length=250)
+    total_price = models.DecimalField(decimal_places=2, max_digits=8)
 

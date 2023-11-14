@@ -1,0 +1,9 @@
+{% extends "base_after_logging_manager.html" %}
+
+{% block page_title %}Manager Dashboard{% endblock %}
+
+{% block content %}
+
+<p>Welcome, {{ request.session.user_email }}</p>
+    
+{% endblock %}

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block page_title %}CarFixPro{% endblock %}</title>
+  
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="#">Home</a></li>
+            <li class="dropdown">
+                <a href="#">Technicians</a>
+                <ul class="dropdown-content">
+                    <li><a href="#">Add Technicians</a></li>
+                    <li><a href="#">Delete Technicians</a></li>
+                    <li><a href="{% url 'add_vehicle' %}">Add Technicians' Skills</a></li>
+                    <li><a href="#">Delete Technicians' Skills</a></li>
+                </ul>
+            </li>
+            <li class="dropdown">
+                <a href="#">Appointments</a>
+                <ul class="dropdown-content">
+                    <li><a href="{% url 'manager_pending_approvals' %}">View Pending Appointment Approvals</a></li>
+                    <li><a href="#">Completion Notification to Customers</a></li>
+                    <li><a href="#">View In-Process Appointments</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    {% block content %}
+    {% endblock %}
+</body>
+</html>

@@ -1,8 +1,9 @@
-from django.shortcuts import render
+from datetime import datetime
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment
+from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment, ManagerLoginForm, AppointmentApprovalForm
 from django.http import HttpResponseRedirect
-from .models import CustomerInfo, Vehicle, Appointment, Location, Service
+from .models import CustomerInfo, Vehicle, Appointment, Location, Service, ManagerInfo
 from passlib.hash import pbkdf2_sha256
 
 def index(request):
@@ -58,6 +59,9 @@ def customer_login(request):
 
 def customer_dashboard(request):
     return render(request, 'account_setup/home_page.html')
+
+def manager_dashboard(request):
+    return render(request, 'account_setup/manager_dashboard.html')
 
 def book_appointment(request):
 
@@ -136,3 +140,47 @@ def add_vehicle(request):
     return render(request, "account_setup/add_vehicle.html", {
         "form": vehicle_registration_form
     })
+
+def manager_login(request):
+    if request.method == 'POST':
+        manager_login_form = ManagerLoginForm(request.POST)
+
+        if manager_login_form.is_valid():
+            uname=manager_login_form.cleaned_data['username']
+            passwd=manager_login_form.cleaned_data['password']
+            stored_password = ManagerInfo.objects.filter(email_id=uname)[0].passwd
+            is_verified = pbkdf2_sha256.verify(passwd, stored_password)
+
+            request.session['user_email'] = manager_login_form.cleaned_data['username']
+            
+            if is_verified:
+                return HttpResponseRedirect("/manager_dashboard")
+            return HttpResponseRedirect("/manager_login")
+
+    else:
+        manager_login_form = ManagerLoginForm()
+
+    return render(request, "account_setup/manager_login.html", {
+        "form": manager_login_form
+    })
+
+
+def manager_pending_approvals(request):
+    pending_appointments = Appointment.objects.filter(manager_start_approval=False)
+    
+    if request.method == 'POST':
+        form = AppointmentApprovalForm(request.POST)
+        if form.is_valid():
+            appointment_id = request.POST.get('appointment_id')
+            
+            # Use appointment_id to retrieve and update the corresponding appointment
+            appointment_instance = Appointment.objects.get(appointment_id=appointment_id)
+            
+            appointment_instance.manager_start_approval = True  # Set manager_start_approval to True
+            appointment_instance.save()
+            # You can add a success message or redirect to a different page after submission
+            return redirect('/manager_pending_approvals')
+    else:
+        form = AppointmentApprovalForm()
+
+    return render(request, 'account_setup/manager_pending_approvals.html', {'pending_appointments': pending_appointments, 'form': form})

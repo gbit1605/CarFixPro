@@ -1,0 +1,21 @@
+{% extends "base_after_logging_manager.html" %}
+
+{% block page_title %}Manager Pending Approvals{% endblock %}
+
+{% block content %}
+    <p>Welcome, {{ request.session.user_email }}. Here is the list of your pending approvals:</p>
+    
+    <ul>
+        {% for appointment in pending_appointments %}
+            <li>
+                {{ appointment.customer_email }} - {{ appointment.service_details }}
+                <form method="post" action="{% url 'manager_pending_approvals' %}">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type="hidden" name="appointment_id" value="{{ appointment.appointment_id }}">
+                    <button type="submit">Approve</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

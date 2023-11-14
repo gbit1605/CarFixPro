@@ -1,4 +1,5 @@
 from django import forms
+from .models import Appointment
 
 class CustomerRegistrationForm(forms.Form):
     first_name = forms.CharField(max_length=30, label="First name", error_messages={
@@ -56,4 +57,14 @@ class BookAppointment(forms.Form):
 
         self.fields['vehicle_details'].choices = vehicle_choices
         self.fields['location_details'].choices = location_choices
+
+class ManagerLoginForm(forms.Form):
+    username = forms.EmailField(label="Your email is your username")
+    password = forms.CharField(max_length=32, required=True, widget=forms.PasswordInput)
+
+
+class AppointmentApprovalForm(forms.ModelForm):
+    class Meta:
+        model = Appointment
+        fields = ['manager_start_approval']
 

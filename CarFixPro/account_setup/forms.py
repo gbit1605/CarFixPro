@@ -68,3 +68,28 @@ class AppointmentApprovalForm(forms.ModelForm):
         model = Appointment
         fields = ['manager_start_approval']
 
+class TechnicianRegistrationForm(forms.Form):
+    ssn = forms.CharField(max_length=9, label="SSN")
+
+    first_name = forms.CharField(max_length=30, label="First name", error_messages={
+        "required" : "Please enter your first name!",
+        "max_length" : "Your first name should not exceed 30 characters!"
+    })
+    last_name = forms.CharField(max_length=30, label="Last name")
+    address = forms.CharField(max_length=100, label="Address")
+    phone = forms.CharField(max_length=10, label="Phone number")
+    email = forms.EmailField(label="Email ID")
+    acc_number = forms.CharField(max_length=16, label="Bank account number")
+    hourly_rate = forms.DecimalField(max_digits=4, decimal_places=2, label="Hourly rate")
+    hire_date = forms.DateField(label="Hire date")
+    location = forms.ChoiceField(choices=(), widget=forms.Select, label="Technician servicing location")
+    password = forms.CharField(max_length=32, required=True, widget=forms.PasswordInput, label="Enter temporary password")
+
+    def __init__(self, *args, **kwargs):
+        location_choices = kwargs.pop('location_choices', [])
+
+        super(TechnicianRegistrationForm, self).__init__(*args, **kwargs)
+
+        default_option = ('', 'Select...')
+        location_choices = [default_option] + location_choices
+        self.fields['location'].choices = location_choices

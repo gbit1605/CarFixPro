@@ -10,5 +10,6 @@ urlpatterns = [
     path("manager_dashboard", views.manager_dashboard),
     path("manager_pending_approvals", views.manager_pending_approvals, name="manager_pending_approvals"),
     path("book_appointment", views.book_appointment, name="book_appointment"),
-    path("add_vehicle", views.add_vehicle, name="add_vehicle")
+    path("add_vehicle", views.add_vehicle, name="add_vehicle"), 
+    path("technician_registration", views.technician_registration, name="technician_registration")
 ]

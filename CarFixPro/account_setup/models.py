@@ -118,10 +118,10 @@ class TechnicianInfo(models.Model):
     phone = models.CharField(max_length=10)
     email_id = models.EmailField(primary_key=True, null=False)
     acc_number = models.CharField(max_length=16)
-    hourly_rate = models.IntegerField()
+    hourly_rate = models.DecimalField(max_digits=4, decimal_places=2)
     mngr = models.ForeignKey(ManagerInfo, on_delete=models.CASCADE)
     hire_date = models.DateField()
-    location = models.ForeignKey(Location, on_delete=models.CASCADE)
+    location = models.CharField(max_length=100)
 
     passwd = models.CharField(max_length=256, null=True)
 

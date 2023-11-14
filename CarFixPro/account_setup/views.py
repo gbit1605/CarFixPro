@@ -1,9 +1,9 @@
 from datetime import datetime
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment, ManagerLoginForm, AppointmentApprovalForm
+from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment, ManagerLoginForm, AppointmentApprovalForm, TechnicianRegistrationForm
 from django.http import HttpResponseRedirect
-from .models import CustomerInfo, Vehicle, Appointment, Location, Service, ManagerInfo
+from .models import CustomerInfo, Vehicle, Appointment, Location, Service, ManagerInfo, TechnicianInfo
 from passlib.hash import pbkdf2_sha256
 
 def index(request):
@@ -184,3 +184,40 @@ def manager_pending_approvals(request):
         form = AppointmentApprovalForm()
 
     return render(request, 'account_setup/manager_pending_approvals.html', {'pending_appointments': pending_appointments, 'form': form})
+
+
+def technician_registration(request):
+    location_objects = Location.objects.all()
+    location_details = []
+    user_email = request.session.get('user_email', None)
+    for i in location_objects:
+        location_details.append(str(i.address) + " " + str(i.state) + " " + str(i.pincode))
+
+    location_details_dropdown = [(location_details[i], location_details[i]) for i in range(len(location_details))]
+    if request.method == 'POST':
+        technician_registration_form = TechnicianRegistrationForm(request.POST, location_choices=location_details_dropdown)
+
+        if technician_registration_form.is_valid():
+            
+            tinfo = TechnicianInfo(SSN=technician_registration_form.cleaned_data['ssn'],
+                                 fname=technician_registration_form.cleaned_data['first_name'],
+                                 lname=technician_registration_form.cleaned_data['last_name'],
+                                 address=technician_registration_form.cleaned_data['address'],
+                                 phone=technician_registration_form.cleaned_data['phone'],
+                                 email_id=technician_registration_form.cleaned_data['email'],
+                                 acc_number=technician_registration_form.cleaned_data['acc_number'],
+                                 hourly_rate = technician_registration_form.cleaned_data['hourly_rate'],
+                                 mngr = ManagerInfo.objects.get(email_id=user_email),
+                                 hire_date = technician_registration_form.cleaned_data['hire_date'],
+                                 location = technician_registration_form.cleaned_data['location'],
+                                 passwd=pbkdf2_sha256.encrypt(technician_registration_form.cleaned_data['password'], rounds=12000, salt_size=32))
+            tinfo.save()
+
+            return HttpResponseRedirect("/thank-you")
+
+    else:
+        technician_registration_form = TechnicianRegistrationForm(location_choices=location_details_dropdown)
+
+    return render(request, "account_setup/technician_registration.html", {
+        "form": technician_registration_form
+    })

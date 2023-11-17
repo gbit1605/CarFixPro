@@ -1,0 +1,59 @@
+{% extends "base_after_logging_manager.html" %}
+
+{% block page_title %}Add Technician Skills{% endblock %}
+
+{% block content %}
+    <p>Add Technician Skills</p>
+    <form method="POST" id="addTechnicianSkillsForm">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-control {% if field.errors %}errors{% endif %}">
+                {{ field.label_tag }}
+                {{ field }}
+                {{ field.errors }}
+            </div>
+        {% endfor %}
+
+        <div id="remainingServicesContainer">
+            <p>Remaining Services:</p>
+            <ul id="remainingServicesList">
+                <!-- Checkboxes will be dynamically added here -->
+                <p>gbh</p>
+            </ul>
+        </div>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        function handleTechnicianChange() {
+            var technicianDropdown = document.getElementById("id_technician");
+            var remainingServicesList = document.getElementById("remainingServicesList");
+            var selectedTechnician = technicianDropdown.value;
+
+            // Clear existing checkboxes
+            remainingServicesList.innerHTML = "";
+
+            // Check if a technician is selected
+            if (selectedTechnician !== "") {
+                // Add checkboxes for remaining services
+                {% for s in form.service.choices %}
+                    if ("{{ s.0 }}" !== selectedTechnician) {
+                        var li = document.createElement("li");
+                        li.innerHTML = `
+                            <input type="checkbox" name="service" value="${{ s.0 }}" id="${{ s.0 }}">
+                            <label for="${{ s.0 }}">{{ s.1 }}</label>
+                        `;
+                        remainingServicesList.appendChild(li);
+                    }
+                {% endfor %}
+            }
+        }
+
+        // Attach the onchange event listener to the technician dropdown
+        document.getElementById("id_technician").addEventListener("change", handleTechnicianChange);
+
+        // Trigger the handler initially in case there is a pre-selected technician
+        handleTechnicianChange();
+    </script>
+{% endblock %}

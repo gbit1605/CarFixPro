@@ -1,16 +1,14 @@
 from datetime import datetime
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment, ManagerLoginForm, AppointmentApprovalForm, TechnicianRegistrationForm
+from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment, ManagerLoginForm, AppointmentApprovalForm, TechnicianRegistrationForm, AddTechnicianSkillsForm
 from django.http import HttpResponseRedirect
-from .models import CustomerInfo, Vehicle, Appointment, Location, Service, ManagerInfo, TechnicianInfo
+from .models import CustomerInfo, Vehicle, Appointment, Location, Service, ManagerInfo, TechnicianInfo, TechnicianSkills
 from passlib.hash import pbkdf2_sha256
 
 def index(request):
     if request.method == 'POST':
         customer_registration_form = CustomerRegistrationForm(request.POST)
-
-        
 
         if customer_registration_form.is_valid():
             cinfo = CustomerInfo(fname=customer_registration_form.cleaned_data['first_name'],
@@ -220,4 +218,47 @@ def technician_registration(request):
 
     return render(request, "account_setup/technician_registration.html", {
         "form": technician_registration_form
+    })
+
+def add_technician_skills(request):
+    list_of_technicians = [(i.email_id, i.email_id) for i in TechnicianInfo.objects.all()]
+
+    if request.method == 'POST':
+        add_technician_skills_form = AddTechnicianSkillsForm(request.POST, technician_choices=list_of_technicians)
+
+        if add_technician_skills_form.is_valid():
+            email_id = add_technician_skills_form.cleaned_data['technician']
+            technician_objects = TechnicianSkills.objects.filter(email_id=email_id)
+            technician_skills, remaining_services = [], []
+
+            for tech_object in technician_objects:
+                technician_skills.append(tech_object.service_type)
+
+            CHOICES_SERVICES = [
+                'Maintenance and Repairs',
+                'Diagnostic Services',
+                'Body and Paint Services',
+                'Detailing Services',
+                'Customization Services',
+                'Towing and Recovery Services',
+                'Pre-Purchase Inspection',
+                'Rental and Leasing Services',
+                'Consultation and Advice'
+            ]
+
+            for service in CHOICES_SERVICES:
+                if service not in technician_skills:
+                    remaining_services.append((service, service))
+
+            add_technician_skills_form = AddTechnicianSkillsForm(
+                technician_choices=list_of_technicians,
+                service_choices=remaining_services,
+                initial={'technician': email_id}  # Set the initial value for the technician field
+            )
+
+    else:
+        add_technician_skills_form = AddTechnicianSkillsForm(technician_choices=list_of_technicians)
+
+    return render(request, "account_setup/technician_registration.html", {
+        "form": add_technician_skills_form
     })

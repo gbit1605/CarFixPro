@@ -93,3 +93,20 @@ class TechnicianRegistrationForm(forms.Form):
         default_option = ('', 'Select...')
         location_choices = [default_option] + location_choices
         self.fields['location'].choices = location_choices
+
+class AddTechnicianSkillsForm(forms.Form):
+    technician = forms.ChoiceField(choices=(), widget=forms.Select, label="Select technician")
+    service = forms.MultipleChoiceField(choices=(), widget=forms.CheckboxSelectMultiple, label="Select services")
+
+    def __init__(self, *args, **kwargs):
+        technician_choices = kwargs.pop('technician_choices', [])
+        service_choices = kwargs.pop('service_choices', [])
+
+        super(AddTechnicianSkillsForm, self).__init__(*args, **kwargs)
+
+        default_option = ('', 'Select...')
+        technician_choices = [default_option] + technician_choices
+
+        self.fields['technician'].choices = technician_choices
+        self.fields['service'].choices = service_choices
+

@@ -128,3 +128,6 @@ class TechnicianInfo(models.Model):
     def verify_password(self, p):
         return pbkdf2_sha256.verify(p, self.passwd)
     
+class TechnicianSkills(models.Model):
+    email_id = models.EmailField(null=False)
+    service_type = models.CharField(max_length=30)

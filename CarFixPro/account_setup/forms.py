@@ -1,5 +1,5 @@
 from django import forms
-from .models import Appointment
+from .models import Appointment, AppointmentStatus
 
 class CustomerRegistrationForm(forms.Form):
     first_name = forms.CharField(max_length=30, label="First name", error_messages={
@@ -96,11 +96,9 @@ class TechnicianRegistrationForm(forms.Form):
 
 class AddTechnicianSkillsForm(forms.Form):
     technician = forms.ChoiceField(choices=(), widget=forms.Select, label="Select technician")
-    service = forms.MultipleChoiceField(choices=(), widget=forms.CheckboxSelectMultiple, label="Select services")
 
     def __init__(self, *args, **kwargs):
         technician_choices = kwargs.pop('technician_choices', [])
-        service_choices = kwargs.pop('service_choices', [])
 
         super(AddTechnicianSkillsForm, self).__init__(*args, **kwargs)
 
@@ -108,5 +106,31 @@ class AddTechnicianSkillsForm(forms.Form):
         technician_choices = [default_option] + technician_choices
 
         self.fields['technician'].choices = technician_choices
-        self.fields['service'].choices = service_choices
 
+
+class AddTechnicianSkillsChoicesForm(forms.Form):
+    technician = forms.ChoiceField(choices=(), widget=forms.Select(attrs={'disabled':'disabled'}), label="Select technician", required=False)
+    services = forms.MultipleChoiceField(choices=(), widget=forms.CheckboxSelectMultiple, label="Select services")
+
+    def __init__(self, *args, **kwargs):
+        technician_choices = kwargs.pop('technician_choices', [])
+        services_choices = kwargs.pop('service_choices', [])
+
+        super(AddTechnicianSkillsChoicesForm, self).__init__(*args, **kwargs)
+
+        self.fields['technician'].choices = technician_choices
+        self.fields['services'].choices = services_choices
+
+class TechnicianLoginForm(forms.Form):
+    username = forms.EmailField(label="Your email is your username")
+    password = forms.CharField(max_length=32, required=True, widget=forms.PasswordInput)
+
+class TechnicianCompletionForm(forms.ModelForm):
+    class Meta:
+        model = AppointmentStatus
+        fields = ['completed']
+
+class ManagerAppointmentFinishApprovalForm(forms.ModelForm):
+    class Meta:
+        model = Appointment
+        fields = ['manager_finish_approval']

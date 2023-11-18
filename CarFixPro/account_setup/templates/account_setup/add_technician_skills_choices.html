@@ -4,7 +4,7 @@
 
 {% block content %}
     <p>Add Technician Skills</p>
-    <form method="POST" id="addTechnicianSkillsForm">
+    <form method="POST">
         {% csrf_token %}
         {% for field in form %}
             <div class="form-control {% if field.errors %}errors{% endif %}">
@@ -15,4 +15,5 @@
         {% endfor %}
         <button type="submit">Submit</button>
     </form>
+        
 {% endblock %}

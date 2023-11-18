@@ -1,9 +1,9 @@
 from datetime import datetime
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment, ManagerLoginForm, AppointmentApprovalForm, TechnicianRegistrationForm, AddTechnicianSkillsForm
+from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment, ManagerLoginForm, AppointmentApprovalForm, TechnicianRegistrationForm, AddTechnicianSkillsForm, AddTechnicianSkillsChoicesForm, TechnicianLoginForm, TechnicianCompletionForm, ManagerAppointmentFinishApprovalForm
 from django.http import HttpResponseRedirect
-from .models import CustomerInfo, Vehicle, Appointment, Location, Service, ManagerInfo, TechnicianInfo, TechnicianSkills
+from .models import CustomerInfo, Vehicle, Appointment, Location, Service, ManagerInfo, TechnicianInfo, TechnicianSkills, AppointmentStatus
 from passlib.hash import pbkdf2_sha256
 
 def index(request):
@@ -60,6 +60,9 @@ def customer_dashboard(request):
 
 def manager_dashboard(request):
     return render(request, 'account_setup/manager_dashboard.html')
+
+def technician_dashboard(request):
+    return render(request, 'account_setup/technician_dashboard.html')
 
 def book_appointment(request):
 
@@ -221,44 +224,131 @@ def technician_registration(request):
     })
 
 def add_technician_skills(request):
+
     list_of_technicians = [(i.email_id, i.email_id) for i in TechnicianInfo.objects.all()]
 
     if request.method == 'POST':
+        
         add_technician_skills_form = AddTechnicianSkillsForm(request.POST, technician_choices=list_of_technicians)
 
         if add_technician_skills_form.is_valid():
-            email_id = add_technician_skills_form.cleaned_data['technician']
-            technician_objects = TechnicianSkills.objects.filter(email_id=email_id)
-            technician_skills, remaining_services = [], []
-
-            for tech_object in technician_objects:
-                technician_skills.append(tech_object.service_type)
-
-            CHOICES_SERVICES = [
-                'Maintenance and Repairs',
-                'Diagnostic Services',
-                'Body and Paint Services',
-                'Detailing Services',
-                'Customization Services',
-                'Towing and Recovery Services',
-                'Pre-Purchase Inspection',
-                'Rental and Leasing Services',
-                'Consultation and Advice'
-            ]
-
-            for service in CHOICES_SERVICES:
-                if service not in technician_skills:
-                    remaining_services.append((service, service))
-
-            add_technician_skills_form = AddTechnicianSkillsForm(
-                technician_choices=list_of_technicians,
-                service_choices=remaining_services,
-                initial={'technician': email_id}  # Set the initial value for the technician field
-            )
+            request.session['technician_email'] = add_technician_skills_form.cleaned_data['technician']
+            print(request.session.get('technician_email', None))
+            return redirect('/add_technician_skills/' + str(request.session.get('technician_email', None)))
 
     else:
         add_technician_skills_form = AddTechnicianSkillsForm(technician_choices=list_of_technicians)
 
-    return render(request, "account_setup/technician_registration.html", {
+    return render(request, "account_setup/add_technician_skills.html", {
         "form": add_technician_skills_form
     })
+
+def add_technician_skills_choices(request, test_number):
+    list_of_technicians = [(test_number, test_number)]
+
+    CHOICES_SERVICES = [
+    'Maintenance and Repairs',
+    'Diagnostic Services',
+    'Body and Paint Services',
+    'Detailing Services',
+    'Customization Services',
+    'Towing and Recovery Services',
+    'Pre-Purchase Inspection',
+    'Rental and Leasing Services',
+    'Consultation and Advice']
+
+    technician_skills = [skill_obj.service_type for skill_obj in TechnicianSkills.objects.filter(email_id=test_number)]
+    technician_skills_remaining = []
+    for skill in technician_skills:
+        CHOICES_SERVICES.remove(skill)
+    CHOICES_SERVICES = [(s, s) for s in CHOICES_SERVICES]
+
+    if request.method == 'POST':
+        
+        add_technician_skills_choices_form = AddTechnicianSkillsChoicesForm(request.POST, technician_choices=list_of_technicians, service_choices=CHOICES_SERVICES)
+
+        if add_technician_skills_choices_form.is_valid():
+            selected_services = add_technician_skills_choices_form.cleaned_data['services']
+            for service in selected_services:
+                service_instance = TechnicianSkills(email_id=test_number, service_type=service)
+                service_instance.save()
+            return HttpResponseRedirect("/thank-you")
+
+    else:
+        add_technician_skills_choices_form = AddTechnicianSkillsChoicesForm(technician_choices=list_of_technicians, service_choices=CHOICES_SERVICES)
+
+    return render(request, "account_setup/add_technician_skills_choices.html", {
+        "form": add_technician_skills_choices_form, 'test_number':test_number
+    })
+
+def technician_login(request):
+    if request.method == 'POST':
+        technician_login_form = TechnicianLoginForm(request.POST)
+
+        if technician_login_form.is_valid():
+            uname=technician_login_form.cleaned_data['username']
+            passwd=technician_login_form.cleaned_data['password']
+            stored_password = TechnicianInfo.objects.filter(email_id=uname)[0].passwd
+            is_verified = pbkdf2_sha256.verify(passwd, stored_password)
+
+            request.session['technician_email'] = technician_login_form.cleaned_data['username']
+            
+            if is_verified:
+                return HttpResponseRedirect("/technician_dashboard")
+            return HttpResponseRedirect("/technician_login")
+
+    else:
+        technician_login_form = TechnicianLoginForm()
+
+    return render(request, "account_setup/technician_login.html", {
+        "form": technician_login_form
+    })  
+
+def technician_pending_appointments(request):
+    all_appointments = AppointmentStatus.objects.filter(completed=False)
+    technician_email = request.session.get('technician_email', None)
+    technician_skills = [skill.service_type for skill in TechnicianSkills.objects.filter(email_id=technician_email)]
+    appointments_for_technician = []
+    for appointment in all_appointments:
+        if appointment.service_detail in technician_skills:
+            appointments_for_technician.append(appointment)
+    
+    if request.method == 'POST':
+        form = TechnicianCompletionForm(request.POST)
+        if form.is_valid():
+            appointment_id = request.POST.get('appointment')
+            print(appointment_id)
+            service_detail = request.POST.get('service_detail')
+
+            appointment_status_instance = AppointmentStatus.objects.get(appointment=appointment_id, service_detail=service_detail)
+            
+            appointment_status_instance.completed = True  
+            appointment_status_instance.save()
+
+            return redirect('/technician_pending_appointments')
+    else:
+        form = TechnicianCompletionForm()
+    return render(request, 'account_setup/technician_pending_appointments.html', {'appointments_for_technician':appointments_for_technician, 'form': form})
+    
+def manager_appointment_finish_approval(request):
+    appointment_objects = Appointment.objects.filter(manager_start_approval=True, manager_finish_approval=False)
+    completed_appointments = []
+    for appointment in appointment_objects:
+        appointment_status = all([app.completed for app in AppointmentStatus.objects.filter(appointment=appointment.appointment_id)])
+        if appointment_status:
+            completed_appointments.append(appointment)
+    print(completed_appointments)
+    if request.method == 'POST':
+        form = ManagerAppointmentFinishApprovalForm(request.POST)
+        if form.is_valid():
+            appointment_id = request.POST.get('appointment_id')
+
+            appointment_instance = Appointment.objects.get(appointment_id=appointment_id)
+            
+            appointment_instance.manager_finish_approval = True  
+            appointment_instance.save()
+
+            return redirect('/manager_appointment_finish_approval')
+    else:
+        form = ManagerAppointmentFinishApprovalForm()
+    return render(request, 'account_setup/manager_appointment_finish_approval.html', {'appointments_for_manager':completed_appointments, 'form': form})

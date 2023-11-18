@@ -1,15 +1,15 @@
 {% extends "base_after_logging_manager.html" %}
 
-{% block page_title %}Manager Pending Approvals{% endblock %}
+{% block page_title %}Manager Completed Appointment Approvals{% endblock %}
 
 {% block content %}
     <p>Welcome, {{ request.session.user_email }}. Here is the list of your pending approvals:</p>
     
     <ul>
-        {% for appointment in pending_appointments %}
+        {% for appointment in appointments_for_manager %}
             <li>
-                {{ appointment.customer_email }} - {{ appointment.service_details }}
-                <form method="post" action="{% url 'manager_pending_approvals' %}">
+                {{appointment.appointment_id}} - {{ appointment.customer_email }} - {{ appointment.service_details }}
+                <form method="post" action="{% url 'manager_appointment_finish_approval' %}">
                     {% csrf_token %}
                     <input type="hidden" name="appointment_id" value="{{ appointment.appointment_id }}">
                     <button type="submit">Approve</button>

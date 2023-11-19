@@ -16,6 +16,8 @@ urlpatterns = [
     path("add_vehicle", views.add_vehicle, name="add_vehicle"), 
     path("technician_registration", views.technician_registration, name="technician_registration"),
     path("add_technician_skills", views.add_technician_skills, name="add_technician_skills"),
+    path("delete_technician_skills", views.delete_technician_skills, name="delete_technician_skills"),
     path("add_technician_skills/<str:test_number>", views.add_technician_skills_choices, name="add_technician_skills_choices"),
+    path("delete_technician_skills/<str:test_number>", views.delete_technician_skills_choices, name="delete_technician_skills_choices"),
     path("manager_appointment_finish_approval", views.manager_appointment_finish_approval, name="manager_appointment_finish_approval")
 ]

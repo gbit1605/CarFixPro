@@ -121,6 +121,33 @@ class AddTechnicianSkillsChoicesForm(forms.Form):
         self.fields['technician'].choices = technician_choices
         self.fields['services'].choices = services_choices
 
+class DeleteTechnicianSkillsForm(forms.Form):
+    technician = forms.ChoiceField(choices=(), widget=forms.Select, label="Select technician")
+
+    def __init__(self, *args, **kwargs):
+        technician_choices = kwargs.pop('technician_choices', [])
+
+        super(DeleteTechnicianSkillsForm, self).__init__(*args, **kwargs)
+
+        default_option = ('', 'Select...')
+        technician_choices = [default_option] + technician_choices
+
+        self.fields['technician'].choices = technician_choices
+
+
+class DeleteTechnicianSkillsChoicesForm(forms.Form):
+    technician = forms.ChoiceField(choices=(), widget=forms.Select(attrs={'disabled':'disabled'}), label="Select technician", required=False)
+    services = forms.MultipleChoiceField(choices=(), widget=forms.CheckboxSelectMultiple, label="Select services")
+
+    def __init__(self, *args, **kwargs):
+        technician_choices = kwargs.pop('technician_choices', [])
+        services_choices = kwargs.pop('service_choices', [])
+
+        super(DeleteTechnicianSkillsChoicesForm, self).__init__(*args, **kwargs)
+
+        self.fields['technician'].choices = technician_choices
+        self.fields['services'].choices = services_choices
+
 class TechnicianLoginForm(forms.Form):
     username = forms.EmailField(label="Your email is your username")
     password = forms.CharField(max_length=32, required=True, widget=forms.PasswordInput)

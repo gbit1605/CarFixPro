@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment, ManagerLoginForm, AppointmentApprovalForm, TechnicianRegistrationForm, AddTechnicianSkillsForm, AddTechnicianSkillsChoicesForm, TechnicianLoginForm, TechnicianCompletionForm, ManagerAppointmentFinishApprovalForm
+from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment, ManagerLoginForm, AppointmentApprovalForm, TechnicianRegistrationForm, AddTechnicianSkillsForm, AddTechnicianSkillsChoicesForm, TechnicianLoginForm, TechnicianCompletionForm, ManagerAppointmentFinishApprovalForm, DeleteTechnicianSkillsForm, DeleteTechnicianSkillsChoicesForm
 from django.http import HttpResponseRedirect
 from .models import CustomerInfo, Vehicle, Appointment, Location, Service, ManagerInfo, TechnicianInfo, TechnicianSkills, AppointmentStatus
 from passlib.hash import pbkdf2_sha256
@@ -233,7 +233,6 @@ def add_technician_skills(request):
 
         if add_technician_skills_form.is_valid():
             request.session['technician_email'] = add_technician_skills_form.cleaned_data['technician']
-            print(request.session.get('technician_email', None))
             return redirect('/add_technician_skills/' + str(request.session.get('technician_email', None)))
 
     else:
@@ -279,6 +278,48 @@ def add_technician_skills_choices(request, test_number):
 
     return render(request, "account_setup/add_technician_skills_choices.html", {
         "form": add_technician_skills_choices_form, 'test_number':test_number
+    })
+
+def delete_technician_skills(request):
+
+    list_of_technicians = [(i.email_id, i.email_id) for i in TechnicianInfo.objects.all()]
+
+    if request.method == 'POST':
+        
+        delete_technician_skills_form = DeleteTechnicianSkillsForm(request.POST, technician_choices=list_of_technicians)
+
+        if delete_technician_skills_form.is_valid():
+            request.session['technician_email'] = delete_technician_skills_form.cleaned_data['technician']
+            return redirect('/delete_technician_skills/' + str(request.session.get('technician_email', None)))
+
+    else:
+        delete_technician_skills_form = DeleteTechnicianSkillsForm(technician_choices=list_of_technicians)
+
+    return render(request, "account_setup/delete_technician_skills.html", {
+        "form": delete_technician_skills_form
+    })
+
+def delete_technician_skills_choices(request, test_number):
+    list_of_technicians = [(test_number, test_number)]
+
+    technician_skills = [(skill_obj.service_type, skill_obj.service_type) for skill_obj in TechnicianSkills.objects.filter(email_id=test_number)]
+
+    if request.method == 'POST':
+        
+        delete_technician_skills_choices_form = DeleteTechnicianSkillsChoicesForm(request.POST, technician_choices=list_of_technicians, service_choices=technician_skills)
+
+        if delete_technician_skills_choices_form.is_valid():
+            selected_services = delete_technician_skills_choices_form.cleaned_data['services']
+            for service in selected_services:
+                service_instance = TechnicianSkills.objects.get(email_id=test_number, service_type=service)
+                service_instance.delete()
+            return HttpResponseRedirect("/thank-you")
+
+    else:
+        delete_technician_skills_choices_form = DeleteTechnicianSkillsChoicesForm(technician_choices=list_of_technicians, service_choices=technician_skills)
+
+    return render(request, "account_setup/add_technician_skills_choices.html", {
+        "form": delete_technician_skills_choices_form, 'test_number':test_number
     })
 
 def technician_login(request):

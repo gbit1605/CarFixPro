@@ -80,7 +80,6 @@ class TechnicianRegistrationForm(forms.Form):
     phone = forms.CharField(max_length=10, label="Phone number")
     email = forms.EmailField(label="Email ID")
     acc_number = forms.CharField(max_length=16, label="Bank account number")
-    hourly_rate = forms.DecimalField(max_digits=4, decimal_places=2, label="Hourly rate")
     hire_date = forms.DateField(label="Hire date")
     location = forms.ChoiceField(choices=(), widget=forms.Select, label="Technician servicing location")
     password = forms.CharField(max_length=32, required=True, widget=forms.PasswordInput, label="Enter temporary password")

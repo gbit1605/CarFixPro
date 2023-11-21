@@ -3,7 +3,7 @@
 {% block page_title %}Technician Pending Approvals{% endblock %}
 
 {% block content %}
-    <p>Welcome, {{ request.session.user_email }}. Here is the list of pending appointments:</p>
+    <p>Welcome, {{ request.session.technician_email }}. Here is the list of pending appointments:</p>
     
     <ul>
         {% for appointment in appointments_for_technician %}

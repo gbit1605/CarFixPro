@@ -82,19 +82,6 @@ class Appointment(models.Model):
     manager_start_approval = models.BooleanField(default=False)
     manager_finish_approval = models.BooleanField(default=False)
 
-class AppointmentStatus(models.Model):
-    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
-    service_detail = models.CharField(max_length=250)
-    completed = models.BooleanField(default=False)
-
-@receiver(post_save, sender=Appointment)
-def create_appointment_status(sender, instance, created, **kwargs):
-    if created:
-        service_details_list = instance.service_details.split(', ')
-
-        for service_detail in service_details_list:
-            AppointmentStatus.objects.create(appointment=instance, service_detail=service_detail.strip())
-
 class ManagerInfo(models.Model):
     fname = models.CharField(max_length=30)
     lname = models.CharField(max_length=30)
@@ -118,11 +105,10 @@ class TechnicianInfo(models.Model):
     phone = models.CharField(max_length=10)
     email_id = models.EmailField(primary_key=True, null=False)
     acc_number = models.CharField(max_length=16)
-    hourly_rate = models.DecimalField(max_digits=4, decimal_places=2)
+    salary = models.DecimalField(max_digits=6, decimal_places=2)
     mngr = models.ForeignKey(ManagerInfo, on_delete=models.CASCADE)
     hire_date = models.DateField()
     location = models.CharField(max_length=100)
-
     passwd = models.CharField(max_length=256, null=True)
 
     def verify_password(self, p):
@@ -131,3 +117,17 @@ class TechnicianInfo(models.Model):
 class TechnicianSkills(models.Model):
     email_id = models.EmailField(null=False)
     service_type = models.CharField(max_length=30)
+
+class AppointmentStatus(models.Model):
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
+    service_detail = models.CharField(max_length=250)
+    completed = models.BooleanField(default=False)
+    completed_by_technician = models.ForeignKey(TechnicianInfo, null=True, blank=True, on_delete=models.DO_NOTHING)
+
+@receiver(post_save, sender=Appointment)
+def create_appointment_status(sender, instance, created, **kwargs):
+    if created:
+        service_details_list = instance.service_details.split(', ')
+
+        for service_detail in service_details_list:
+            AppointmentStatus.objects.create(appointment=instance, service_detail=service_detail.strip())

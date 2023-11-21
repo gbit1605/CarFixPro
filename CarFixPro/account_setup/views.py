@@ -226,7 +226,7 @@ def technician_registration(request):
                                  phone=technician_registration_form.cleaned_data['phone'],
                                  email_id=technician_registration_form.cleaned_data['email'],
                                  acc_number=technician_registration_form.cleaned_data['acc_number'],
-                                 hourly_rate = technician_registration_form.cleaned_data['hourly_rate'],
+                                 salary = 1500.00,
                                  mngr = ManagerInfo.objects.get(email_id=user_email),
                                  hire_date = technician_registration_form.cleaned_data['hire_date'],
                                  location = technician_registration_form.cleaned_data['location'],
@@ -380,7 +380,7 @@ def technician_pending_appointments(request):
     technician_email = request.session.get('technician_email', None)
     if technician_email == None:
         return HttpResponseRedirect("/technician_login")
-    all_appointments = AppointmentStatus.objects.filter(completed=False)
+    all_appointments = AppointmentStatus.objects.filter(appointment__manager_start_approval=True, completed=False)
     technician_email = request.session.get('technician_email', None)
     technician_skills = [skill.service_type for skill in TechnicianSkills.objects.filter(email_id=technician_email)]
     appointments_for_technician = []
@@ -398,6 +398,8 @@ def technician_pending_appointments(request):
             appointment_status_instance = AppointmentStatus.objects.get(appointment=appointment_id, service_detail=service_detail)
             
             appointment_status_instance.completed = True  
+            technician_object = TechnicianInfo.objects.filter(email_id=technician_email)
+            appointment_status_instance.completed_by_technician = technician_object[0]
             appointment_status_instance.save()
 
             return redirect('/technician_pending_appointments')
@@ -417,10 +419,24 @@ def manager_appointment_finish_approval(request):
             completed_appointments.append(appointment)
 
     if request.method == 'POST':
+        from decimal import Decimal
         form = ManagerAppointmentFinishApprovalForm(request.POST)
         if form.is_valid():
             appointment_id = request.POST.get('appointment_id')
-
+            appointment_status_objects = AppointmentStatus.objects.filter(appointment=appointment_id)
+            stype, vtype, tid = [], [], []
+            for a in appointment_status_objects:
+                stype.append(a.service_detail)
+                vtype.append(a.appointment.vehicletype)
+                tid.append(a.completed_by_technician)
+            for i in range(len(stype)):
+                price = Service.objects.filter(service_type=stype[i], vehicle_type=vtype[i])[0].price
+                price = price * Decimal(0.1)
+                t_object = TechnicianInfo.objects.filter(email_id=tid[i].email_id)[0]
+                temp_price = t_object.salary
+                temp_price += price
+                t_object.salary = temp_price
+                t_object.save()
             appointment_instance = Appointment.objects.get(appointment_id=appointment_id)
             
             appointment_instance.manager_finish_approval = True  
@@ -442,3 +458,5 @@ def logout_manager(request):
 def logout_technician(request):
     request.session['technician_email'] = None
     return HttpResponseRedirect("/technician_login")
+
+# def pay_technician(request):

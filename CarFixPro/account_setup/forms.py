@@ -160,3 +160,18 @@ class ManagerAppointmentFinishApprovalForm(forms.ModelForm):
     class Meta:
         model = Appointment
         fields = ['manager_finish_approval']
+
+
+class DeleteTechnicianForm(forms.Form):
+    technician = forms.ChoiceField(choices=(), widget=forms.Select, label="Select technician")
+
+    def __init__(self, *args, **kwargs):
+        technician_choices = kwargs.pop('technician_choices', [])
+
+        super(DeleteTechnicianForm, self).__init__(*args, **kwargs)
+
+        default_option = ('', 'Select...')
+        technician_choices = [default_option] + technician_choices
+
+        self.fields['technician'].choices = technician_choices
+

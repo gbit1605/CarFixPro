@@ -22,6 +22,6 @@ urlpatterns = [
     path("manager_appointment_finish_approval", views.manager_appointment_finish_approval, name="manager_appointment_finish_approval"),
     path("logout_customer", views.logout_customer, name="logout_customer"), 
     path("logout_manager", views.logout_manager, name="logout_manager"), 
-    path("logout_technician", views.logout_technician, name="logout_technician")
-    # path("pay_technician", views.pay_technician, name="pay_technician"), 
+    path("logout_technician", views.logout_technician, name="logout_technician"),
+    path("delete_technician", views.delete_technician, name="delete_technician")
 ]

@@ -115,14 +115,14 @@ class TechnicianInfo(models.Model):
         return pbkdf2_sha256.verify(p, self.passwd)
     
 class TechnicianSkills(models.Model):
-    email_id = models.EmailField(null=False)
+    email_id = models.ForeignKey(TechnicianInfo, on_delete=models.CASCADE, null=False)
     service_type = models.CharField(max_length=30)
 
 class AppointmentStatus(models.Model):
     appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
     service_detail = models.CharField(max_length=250)
     completed = models.BooleanField(default=False)
-    completed_by_technician = models.ForeignKey(TechnicianInfo, null=True, blank=True, on_delete=models.DO_NOTHING)
+    completed_by_technician = models.ForeignKey(TechnicianInfo, null=True, blank=True, on_delete=models.SET_NULL)
 
 @receiver(post_save, sender=Appointment)
 def create_appointment_status(sender, instance, created, **kwargs):

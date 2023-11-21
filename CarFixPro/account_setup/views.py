@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment, ManagerLoginForm, AppointmentApprovalForm, TechnicianRegistrationForm, AddTechnicianSkillsForm, AddTechnicianSkillsChoicesForm, TechnicianLoginForm, TechnicianCompletionForm, ManagerAppointmentFinishApprovalForm, DeleteTechnicianSkillsForm, DeleteTechnicianSkillsChoicesForm
+from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment, ManagerLoginForm, AppointmentApprovalForm, TechnicianRegistrationForm, AddTechnicianSkillsForm, AddTechnicianSkillsChoicesForm, TechnicianLoginForm, TechnicianCompletionForm, ManagerAppointmentFinishApprovalForm, DeleteTechnicianSkillsForm, DeleteTechnicianSkillsChoicesForm, DeleteTechnicianForm
 from django.http import HttpResponseRedirect
 from .models import CustomerInfo, Vehicle, Appointment, Location, Service, ManagerInfo, TechnicianInfo, TechnicianSkills, AppointmentStatus
 from passlib.hash import pbkdf2_sha256
@@ -265,6 +265,7 @@ def add_technician_skills(request):
     })
 
 def add_technician_skills_choices(request, test_number):
+    technician_object = TechnicianInfo.objects.filter(email_id=test_number)[0]
     manager_email = request.session.get('manager_email', None)
     if manager_email == None:
         return HttpResponseRedirect("/manager_login")
@@ -293,7 +294,7 @@ def add_technician_skills_choices(request, test_number):
         if add_technician_skills_choices_form.is_valid():
             selected_services = add_technician_skills_choices_form.cleaned_data['services']
             for service in selected_services:
-                service_instance = TechnicianSkills(email_id=test_number, service_type=service)
+                service_instance = TechnicianSkills(email_id=technician_object, service_type=service)
                 service_instance.save()
             return HttpResponseRedirect("/thank-you")
 
@@ -459,4 +460,26 @@ def logout_technician(request):
     request.session['technician_email'] = None
     return HttpResponseRedirect("/technician_login")
 
-# def pay_technician(request):
+def delete_technician(request):
+    manager_email = request.session.get('manager_email', None)
+    if manager_email == None:
+        return HttpResponseRedirect("/manager_login")
+
+    list_of_technicians = [(i.email_id, i.email_id) for i in TechnicianInfo.objects.all()]
+
+    if request.method == 'POST':
+        
+        delete_technician_form = DeleteTechnicianForm(request.POST, technician_choices=list_of_technicians)
+
+        if delete_technician_form.is_valid():
+            to_delete_technician = delete_technician_form.cleaned_data['technician']
+            delete_technician_object = TechnicianInfo.objects.get(email_id=to_delete_technician)
+            delete_technician_object.delete()
+            return redirect('/delete_technician')
+
+    else:
+        delete_technician_form = DeleteTechnicianForm(technician_choices=list_of_technicians)
+
+    return render(request, "account_setup/delete_technician.html", {
+        "form": delete_technician_form
+    }) 

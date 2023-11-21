@@ -56,17 +56,29 @@ def customer_login(request):
     })
 
 def customer_dashboard(request):
-    return render(request, 'account_setup/home_page.html')
+    if request.session.get('user_email', None):
+        return render(request, 'account_setup/home_page.html')
+    else:
+        return HttpResponseRedirect("/customer_login")
 
 def manager_dashboard(request):
-    return render(request, 'account_setup/manager_dashboard.html')
+    if request.session.get('manager_email', None):
+        return render(request, 'account_setup/manager_dashboard.html')
+    else:
+        return HttpResponseRedirect("/manager_login")
 
 def technician_dashboard(request):
-    return render(request, 'account_setup/technician_dashboard.html')
+    if request.session.get('technician_email', None):
+        return render(request, 'account_setup/technician_dashboard.html')
+    else:
+        return HttpResponseRedirect("/technician_login")
+    
 
 def book_appointment(request):
-
+    
     user_email = request.session.get('user_email', None)
+    if user_email == None:
+        return HttpResponseRedirect("/customer_login")
     customer_vehicle_objects = Vehicle.objects.all()
     location_objects = Location.objects.all()
     service_objects = Service.objects.all()
@@ -118,7 +130,8 @@ def book_appointment(request):
 
 def add_vehicle(request):
     user_email = request.session.get('user_email', None)
-    
+    if user_email == None:
+        return HttpResponseRedirect("/customer_login")
 
     if request.method == 'POST':
         vehicle_registration_form = AddVehicleForm(request.POST)
@@ -152,7 +165,7 @@ def manager_login(request):
             stored_password = ManagerInfo.objects.filter(email_id=uname)[0].passwd
             is_verified = pbkdf2_sha256.verify(passwd, stored_password)
 
-            request.session['user_email'] = manager_login_form.cleaned_data['username']
+            request.session['manager_email'] = manager_login_form.cleaned_data['username']
             
             if is_verified:
                 return HttpResponseRedirect("/manager_dashboard")
@@ -167,6 +180,9 @@ def manager_login(request):
 
 
 def manager_pending_approvals(request):
+    manager_email = request.session.get('manager_email', None)
+    if manager_email == None:
+        return HttpResponseRedirect("/manager_login")
     pending_appointments = Appointment.objects.filter(manager_start_approval=False)
     
     if request.method == 'POST':
@@ -188,9 +204,12 @@ def manager_pending_approvals(request):
 
 
 def technician_registration(request):
+    manager_email = request.session.get('manager_email', None)
+    if manager_email == None:
+        return HttpResponseRedirect("/manager_login")
     location_objects = Location.objects.all()
     location_details = []
-    user_email = request.session.get('user_email', None)
+    user_email = request.session.get('manager_email', None)
     for i in location_objects:
         location_details.append(str(i.address) + " " + str(i.state) + " " + str(i.pincode))
 
@@ -224,6 +243,9 @@ def technician_registration(request):
     })
 
 def add_technician_skills(request):
+    manager_email = request.session.get('manager_email', None)
+    if manager_email == None:
+        return HttpResponseRedirect("/manager_login")
 
     list_of_technicians = [(i.email_id, i.email_id) for i in TechnicianInfo.objects.all()]
 
@@ -243,6 +265,9 @@ def add_technician_skills(request):
     })
 
 def add_technician_skills_choices(request, test_number):
+    manager_email = request.session.get('manager_email', None)
+    if manager_email == None:
+        return HttpResponseRedirect("/manager_login")
     list_of_technicians = [(test_number, test_number)]
 
     CHOICES_SERVICES = [
@@ -257,7 +282,6 @@ def add_technician_skills_choices(request, test_number):
     'Consultation and Advice']
 
     technician_skills = [skill_obj.service_type for skill_obj in TechnicianSkills.objects.filter(email_id=test_number)]
-    technician_skills_remaining = []
     for skill in technician_skills:
         CHOICES_SERVICES.remove(skill)
     CHOICES_SERVICES = [(s, s) for s in CHOICES_SERVICES]
@@ -281,6 +305,9 @@ def add_technician_skills_choices(request, test_number):
     })
 
 def delete_technician_skills(request):
+    manager_email = request.session.get('manager_email', None)
+    if manager_email == None:
+        return HttpResponseRedirect("/manager_login")
 
     list_of_technicians = [(i.email_id, i.email_id) for i in TechnicianInfo.objects.all()]
 
@@ -300,6 +327,10 @@ def delete_technician_skills(request):
     })
 
 def delete_technician_skills_choices(request, test_number):
+    manager_email = request.session.get('manager_email', None)
+    if manager_email == None:
+        return HttpResponseRedirect("/manager_login")
+    
     list_of_technicians = [(test_number, test_number)]
 
     technician_skills = [(skill_obj.service_type, skill_obj.service_type) for skill_obj in TechnicianSkills.objects.filter(email_id=test_number)]
@@ -346,6 +377,9 @@ def technician_login(request):
     })  
 
 def technician_pending_appointments(request):
+    technician_email = request.session.get('technician_email', None)
+    if technician_email == None:
+        return HttpResponseRedirect("/technician_login")
     all_appointments = AppointmentStatus.objects.filter(completed=False)
     technician_email = request.session.get('technician_email', None)
     technician_skills = [skill.service_type for skill in TechnicianSkills.objects.filter(email_id=technician_email)]
@@ -372,13 +406,16 @@ def technician_pending_appointments(request):
     return render(request, 'account_setup/technician_pending_appointments.html', {'appointments_for_technician':appointments_for_technician, 'form': form})
     
 def manager_appointment_finish_approval(request):
+    manager_email = request.session.get('manager_email', None)
+    if manager_email == None:
+        return HttpResponseRedirect("/manager_login")
     appointment_objects = Appointment.objects.filter(manager_start_approval=True, manager_finish_approval=False)
     completed_appointments = []
     for appointment in appointment_objects:
         appointment_status = all([app.completed for app in AppointmentStatus.objects.filter(appointment=appointment.appointment_id)])
         if appointment_status:
             completed_appointments.append(appointment)
-    print(completed_appointments)
+
     if request.method == 'POST':
         form = ManagerAppointmentFinishApprovalForm(request.POST)
         if form.is_valid():
@@ -393,3 +430,15 @@ def manager_appointment_finish_approval(request):
     else:
         form = ManagerAppointmentFinishApprovalForm()
     return render(request, 'account_setup/manager_appointment_finish_approval.html', {'appointments_for_manager':completed_appointments, 'form': form})
+
+def logout_customer(request):
+    request.session['user_email'] = None
+    return HttpResponseRedirect("/customer_login")
+
+def logout_manager(request):
+    request.session['manager_email'] = None
+    return HttpResponseRedirect("/manager_login")
+
+def logout_technician(request):
+    request.session['technician_email'] = None
+    return HttpResponseRedirect("/technician_login")

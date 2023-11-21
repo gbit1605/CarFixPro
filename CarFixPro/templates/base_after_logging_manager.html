@@ -68,6 +68,11 @@
     .dropdown-content a:hover {
       background-color: #001f3f; /* Darker navy color on hover */
     }
+
+    /* Add the following CSS for the logout button */
+    li.logout {
+      float: right;
+    }
   </style>
 </head>
 <body>
@@ -91,6 +96,8 @@
                     <li><a href="#">View In-Process Appointments</a></li>
                 </ul>
             </li>
+            <!-- Add the logout button -->
+            <li class="logout"><a href="{% url 'logout_manager' %}">Logout</a></li>
         </ul>
     </nav>
 

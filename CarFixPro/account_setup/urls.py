@@ -19,5 +19,8 @@ urlpatterns = [
     path("delete_technician_skills", views.delete_technician_skills, name="delete_technician_skills"),
     path("add_technician_skills/<str:test_number>", views.add_technician_skills_choices, name="add_technician_skills_choices"),
     path("delete_technician_skills/<str:test_number>", views.delete_technician_skills_choices, name="delete_technician_skills_choices"),
-    path("manager_appointment_finish_approval", views.manager_appointment_finish_approval, name="manager_appointment_finish_approval")
+    path("manager_appointment_finish_approval", views.manager_appointment_finish_approval, name="manager_appointment_finish_approval"),
+    path("logout_customer", views.logout_customer, name="logout_customer"), 
+    path("logout_manager", views.logout_manager, name="logout_manager"), 
+    path("logout_technician", views.logout_technician, name="logout_technician")
 ]

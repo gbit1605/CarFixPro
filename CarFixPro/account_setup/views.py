@@ -1,7 +1,9 @@
 from datetime import datetime
+from datetime import date
+from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment, ManagerLoginForm, AppointmentApprovalForm, TechnicianRegistrationForm, AddTechnicianSkillsForm, AddTechnicianSkillsChoicesForm, TechnicianLoginForm, TechnicianCompletionForm, ManagerAppointmentFinishApprovalForm, DeleteTechnicianSkillsForm, DeleteTechnicianSkillsChoicesForm, DeleteTechnicianForm
+from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment, ManagerLoginForm, AppointmentApprovalForm, TechnicianRegistrationForm, AddTechnicianSkillsForm, AddTechnicianSkillsChoicesForm, TechnicianLoginForm, TechnicianCompletionForm, ManagerAppointmentFinishApprovalForm, DeleteTechnicianSkillsForm, DeleteTechnicianSkillsChoicesForm, DeleteTechnicianForm, SalaryApprovalForm
 from django.http import HttpResponseRedirect
 from .models import CustomerInfo, Vehicle, Appointment, Location, Service, ManagerInfo, TechnicianInfo, TechnicianSkills, AppointmentStatus
 from passlib.hash import pbkdf2_sha256
@@ -229,6 +231,7 @@ def technician_registration(request):
                                  salary = 1500.00,
                                  mngr = ManagerInfo.objects.get(email_id=user_email),
                                  hire_date = technician_registration_form.cleaned_data['hire_date'],
+                                 salary_last_credit = technician_registration_form.cleaned_data['hire_date'],
                                  location = technician_registration_form.cleaned_data['location'],
                                  passwd=pbkdf2_sha256.encrypt(technician_registration_form.cleaned_data['password'], rounds=12000, salt_size=32))
             tinfo.save()
@@ -393,7 +396,6 @@ def technician_pending_appointments(request):
         form = TechnicianCompletionForm(request.POST)
         if form.is_valid():
             appointment_id = request.POST.get('appointment')
-            print(appointment_id)
             service_detail = request.POST.get('service_detail')
 
             appointment_status_instance = AppointmentStatus.objects.get(appointment=appointment_id, service_detail=service_detail)
@@ -483,3 +485,37 @@ def delete_technician(request):
     return render(request, "account_setup/delete_technician.html", {
         "form": delete_technician_form
     }) 
+
+def pay_technician(request):
+    manager_email = request.session.get('manager_email', None)
+    if manager_email == None:
+        return HttpResponseRedirect("/manager_login")
+    technician_objects = TechnicianInfo.objects.all()
+    today = datetime.now()
+    today=today.strftime('%m/%d/%Y')
+    today=datetime.strptime(today, "%m/%d/%Y")
+    final_t_objs = []
+    for tobj in technician_objects:
+        d2=tobj.salary_last_credit
+        d2 = tobj.salary_last_credit.strftime('%m/%d/%Y')
+
+        d2 = datetime.strptime(d2, "%m/%d/%Y")
+        
+        delta = today - d2
+        if delta.days > 30:
+            final_t_objs.append(tobj)
+
+    if request.method == 'POST':
+        form = SalaryApprovalForm(request.POST)
+        if form.is_valid():
+            technician_id = request.POST.get('technician_id')
+            technician_instance = TechnicianInfo.objects.get(email_id=technician_id)
+            technician_instance.salary = 1500.00
+            technician_instance.save_salary_last_credit()
+            technician_instance.save()
+
+            return redirect('/pay_technician')
+    else:
+        form = SalaryApprovalForm()
+
+    return render(request, 'account_setup/pay_technician.html', {'technicians': final_t_objs, 'form': form})

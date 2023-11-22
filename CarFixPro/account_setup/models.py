@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from passlib.hash import pbkdf2_sha256
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -106,10 +107,21 @@ class TechnicianInfo(models.Model):
     email_id = models.EmailField(primary_key=True, null=False)
     acc_number = models.CharField(max_length=16)
     salary = models.DecimalField(max_digits=6, decimal_places=2)
+    salary_last_credit = models.DateField()
     mngr = models.ForeignKey(ManagerInfo, on_delete=models.CASCADE)
     hire_date = models.DateField()
     location = models.CharField(max_length=100)
     passwd = models.CharField(max_length=256, null=True)
+
+    def save_salary_last_credit(self):
+        # Get today's date
+        today = timezone.now().date()
+
+        # Assign today's date to the salary_last_credit field
+        self.salary_last_credit = today
+
+        # Save the model instance to store the date in the database
+        self.save()
 
     def verify_password(self, p):
         return pbkdf2_sha256.verify(p, self.passwd)

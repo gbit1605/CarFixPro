@@ -7,9 +7,9 @@ urlpatterns = [
     path("customer_login", views.customer_login),
     path("manager_login", views.manager_login),
     path("technician_login", views.technician_login),
-    path("technician_dashboard", views.technician_dashboard),
-    path("customer_dashboard", views.customer_dashboard),
-    path("manager_dashboard", views.manager_dashboard),
+    path("technician_dashboard", views.technician_dashboard, name="technician_dashboard"),
+    path("customer_dashboard", views.customer_dashboard, name="customer_dashboard"),
+    path("manager_dashboard", views.manager_dashboard, name="manager_dashboard"),
     path("manager_pending_approvals", views.manager_pending_approvals, name="manager_pending_approvals"),
     path("technician_pending_appointments", views.technician_pending_appointments, name="technician_pending_appointments"),
     path("book_appointment", views.book_appointment, name="book_appointment"),
@@ -23,5 +23,6 @@ urlpatterns = [
     path("logout_customer", views.logout_customer, name="logout_customer"), 
     path("logout_manager", views.logout_manager, name="logout_manager"), 
     path("logout_technician", views.logout_technician, name="logout_technician"),
-    path("delete_technician", views.delete_technician, name="delete_technician")
+    path("delete_technician", views.delete_technician, name="delete_technician"),
+    path("pay_technician", views.pay_technician, name="pay_technician")
 ]

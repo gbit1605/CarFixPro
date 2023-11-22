@@ -1,5 +1,5 @@
 from django import forms
-from .models import Appointment, AppointmentStatus
+from .models import Appointment, AppointmentStatus, TechnicianInfo
 
 class CustomerRegistrationForm(forms.Form):
     first_name = forms.CharField(max_length=30, label="First name", error_messages={
@@ -175,3 +175,12 @@ class DeleteTechnicianForm(forms.Form):
 
         self.fields['technician'].choices = technician_choices
 
+# class SalaryApprovalForm(forms.ModelForm):
+#     class Meta:
+#         model = TechnicianInfo
+#         fields = ['salary', 'salary_last_credit']
+
+class SalaryApprovalForm(forms.ModelForm):
+    class Meta:
+        model = TechnicianInfo
+        fields = []

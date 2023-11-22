@@ -3,7 +3,7 @@
 {% block page_title %}Manager Pending Approvals{% endblock %}
 
 {% block content %}
-    <p>Welcome, {{ request.session.user_email }}. Here is the list of your pending approvals:</p>
+    <p>Welcome, {{ request.session.manager_email }}. Here is the list of your pending approvals:</p>
     
     <ul>
         {% for appointment in pending_appointments %}

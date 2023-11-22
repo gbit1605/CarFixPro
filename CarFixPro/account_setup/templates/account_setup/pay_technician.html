@@ -1,0 +1,21 @@
+{% extends "base_after_logging_manager.html" %}
+
+{% block page_title %}Pay Technician{% endblock %}
+
+{% block content %}
+    <p>Welcome, {{ request.session.manager_email }}. Here is the list of your pending salary approvals:</p>
+    
+    <ul>
+        {% for t in technicians %}
+            <li>
+                {{ t.email_id }} - {{ t.salary }}
+                <form method="post" action="{% url 'pay_technician' %}">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type="hidden" name="technician_id" value="{{ t.email_id }}">
+                    <button type="submit">Approve</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

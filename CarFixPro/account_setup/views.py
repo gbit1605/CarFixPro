@@ -3,7 +3,7 @@ from datetime import date
 from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment, ManagerLoginForm, AppointmentApprovalForm, TechnicianRegistrationForm, AddTechnicianSkillsForm, AddTechnicianSkillsChoicesForm, TechnicianLoginForm, TechnicianCompletionForm, ManagerAppointmentFinishApprovalForm, DeleteTechnicianSkillsForm, DeleteTechnicianSkillsChoicesForm, DeleteTechnicianForm, SalaryApprovalForm
+from .forms import CustomerRegistrationForm, CustomerLoginForm, AddVehicleForm, BookAppointment, ManagerLoginForm, AppointmentApprovalForm, TechnicianRegistrationForm, AddTechnicianSkillsForm, AddTechnicianSkillsChoicesForm, TechnicianLoginForm, TechnicianCompletionForm, ManagerAppointmentFinishApprovalForm, DeleteTechnicianSkillsForm, DeleteTechnicianSkillsChoicesForm, DeleteTechnicianForm, SalaryApprovalForm, RemoveVehicleForm, DeleteAppointmentForm
 from django.http import HttpResponseRedirect
 from .models import CustomerInfo, Vehicle, Appointment, Location, Service, ManagerInfo, TechnicianInfo, TechnicianSkills, AppointmentStatus
 from passlib.hash import pbkdf2_sha256
@@ -81,7 +81,7 @@ def book_appointment(request):
     user_email = request.session.get('user_email', None)
     if user_email == None:
         return HttpResponseRedirect("/customer_login")
-    customer_vehicle_objects = Vehicle.objects.all()
+    customer_vehicle_objects = Vehicle.objects.filter(email_id=user_email)
     location_objects = Location.objects.all()
     service_objects = Service.objects.all()
     vehicle_details, location_details, serivces_details = [], [], []
@@ -192,12 +192,10 @@ def manager_pending_approvals(request):
         if form.is_valid():
             appointment_id = request.POST.get('appointment_id')
             
-            # Use appointment_id to retrieve and update the corresponding appointment
             appointment_instance = Appointment.objects.get(appointment_id=appointment_id)
             
-            appointment_instance.manager_start_approval = True  # Set manager_start_approval to True
+            appointment_instance.manager_start_approval = True 
             appointment_instance.save()
-            # You can add a success message or redirect to a different page after submission
             return redirect('/manager_pending_approvals')
     else:
         form = AppointmentApprovalForm()
@@ -384,7 +382,8 @@ def technician_pending_appointments(request):
     technician_email = request.session.get('technician_email', None)
     if technician_email == None:
         return HttpResponseRedirect("/technician_login")
-    all_appointments = AppointmentStatus.objects.filter(appointment__manager_start_approval=True, completed=False)
+    current_technician_location = TechnicianInfo.objects.get(email_id=technician_email).location
+    all_appointments = AppointmentStatus.objects.filter(appointment__manager_start_approval=True, completed=False, appointment__location=current_technician_location)
     technician_email = request.session.get('technician_email', None)
     technician_skills = [skill.service_type for skill in TechnicianSkills.objects.filter(email_id=technician_email)]
     appointments_for_technician = []
@@ -519,3 +518,82 @@ def pay_technician(request):
         form = SalaryApprovalForm()
 
     return render(request, 'account_setup/pay_technician.html', {'technicians': final_t_objs, 'form': form})
+
+def remove_vehicle(request):
+    user_email = request.session.get('user_email', None)
+    if user_email == None:
+        return HttpResponseRedirect("/customer_login")
+
+    list_of_vehicles = [(i.vin, str(i.vin) + ", " + str(i.mfg_company) + ", " + str(i.model)) for i in Vehicle.objects.filter(customer_email=user_email)]
+
+    if request.method == 'POST':
+        
+        remove_vehicle_form = RemoveVehicleForm(request.POST, vehicle_choices=list_of_vehicles)
+
+        if remove_vehicle_form.is_valid():
+            to_delete_vehicle = remove_vehicle_form.cleaned_data['vehicle']
+            delete_vehicle_object = Vehicle.objects.get(vin=to_delete_vehicle)
+            delete_vehicle_object.delete()
+            delete_appointment_objects = Appointment.objects.filter(vehicle_id=to_delete_vehicle)
+            for app_object in delete_appointment_objects:
+                app_object.delete()
+            return redirect('/remove_vehicle')
+
+    else:
+        remove_vehicle_form = RemoveVehicleForm(vehicle_choices=list_of_vehicles)
+
+    return render(request, "account_setup/remove_vehicle.html", {
+        "form": remove_vehicle_form
+    })   
+
+def delete_appointment(request):
+    user_email = request.session.get('user_email', None)
+    if user_email == None:
+        return HttpResponseRedirect("/customer_login")
+
+    list_of_appointments = [(i.appointment_id, str(i.appointment_id) + ", " + str(i.vehicle_id) + ", " + str(i.vehicletype)) for i in Appointment.objects.filter(customer_email=user_email)]
+
+    if request.method == 'POST':
+        
+        delete_appointment_form = DeleteAppointmentForm(request.POST, appointment_choices=list_of_appointments)
+
+        if delete_appointment_form.is_valid():
+            to_delete_appointment = delete_appointment_form.cleaned_data['appointment']
+            delete_appointment_object = Appointment.objects.get(appointment_id=to_delete_appointment)
+            delete_appointment_object.delete()
+            return redirect('/delete_appointment')
+
+    else:
+        delete_appointment_form = DeleteAppointmentForm(appointment_choices=list_of_appointments)
+
+    return render(request, "account_setup/delete_appointment.html", {
+        "form": delete_appointment_form
+    })
+
+def view_vehicle(request):
+    user_email = request.session.get('user_email', None)
+    if user_email == None:
+        return HttpResponseRedirect("/customer_login")  
+    vehicle_objects = Vehicle.objects.filter(customer_email=user_email)
+    return render(request, "account_setup/view_vehicle.html", {'vehicles':vehicle_objects})
+
+def view_appointments(request):
+    user_email = request.session.get('user_email', None)
+    if user_email == None:
+        return HttpResponseRedirect("/customer_login")  
+    appointment_objects = Appointment.objects.filter(customer_email=user_email)
+    return render(request, "account_setup/view_appointments.html", {'appointments':appointment_objects})
+
+def view_technician_profile(request):
+    techninian_email = request.session.get('technician_email', None)
+    if techninian_email == None:
+        return HttpResponseRedirect("/technician_login")  
+    technician_object = TechnicianInfo.objects.get(email_id=techninian_email)
+    return render(request, "account_setup/view_technician_profile.html", {'technician':technician_object})
+
+def view_inprocess_appointments(request):
+    manager_email = request.session.get('manager_email', None)
+    if manager_email == None:
+        return HttpResponseRedirect("/manager_login")  
+    appointment_objects = Appointment.objects.filter(manager_start_approval=True, manager_finish_approval=False)
+    return render(request, "account_setup/view_inprocess_appointments.html", {'appointments':appointment_objects})

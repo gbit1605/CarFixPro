@@ -1,0 +1,18 @@
+{% extends "base_after_logging.html" %}
+
+{% block page_title %}Delete Appointment{% endblock %}
+
+{% block content %}
+    <p>Delete Appointment</p>
+    <form method="POST">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-control {% if field.errors %}errors{% endif %}">
+                {{ field.label_tag }}
+                {{ field }}
+                {{ field.errors }}
+            </div>
+        {% endfor %}
+        <button type="submit">Submit</button>
+    </form>
+{% endblock %}

@@ -114,13 +114,8 @@ class TechnicianInfo(models.Model):
     passwd = models.CharField(max_length=256, null=True)
 
     def save_salary_last_credit(self):
-        # Get today's date
         today = timezone.now().date()
-
-        # Assign today's date to the salary_last_credit field
         self.salary_last_credit = today
-
-        # Save the model instance to store the date in the database
         self.save()
 
     def verify_password(self, p):

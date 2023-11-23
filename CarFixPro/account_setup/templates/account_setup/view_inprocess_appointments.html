@@ -1,0 +1,15 @@
+{% extends "base_after_logging.html" %}
+
+{% block page_title %}View Appointments{% endblock %}
+
+{% block content %}
+    <p>Welcome, {{ request.session.user_email }}. Here is a list of your appointments:</p>
+    
+    <ul>
+        {% for appointment in appointments %}
+            <li>
+                {{ appointment.appointment_id }} - {{ appointment.date }} - {{ appointment.vehicle_id }} - {{ appointment.vehicletype }} 
+            </li><br>
+        {% endfor %}
+    </ul>
+{% endblock %}

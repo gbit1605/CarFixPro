@@ -1,0 +1,15 @@
+{% extends "base_after_logging.html" %}
+
+{% block page_title %}View Vehicle Details{% endblock %}
+
+{% block content %}
+    <p>Welcome, {{ request.session.user_email }}. Here is a list of your vehicles:</p>
+    
+    <ul>
+        {% for vehicle in vehicles %}
+            <li>
+                {{ vehicle.vin }} - {{ vehicle.mfg_company }} - {{ vehicle.model }} 
+            </li><br>
+        {% endfor %}
+    </ul>
+{% endblock %}

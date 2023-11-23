@@ -175,12 +175,33 @@ class DeleteTechnicianForm(forms.Form):
 
         self.fields['technician'].choices = technician_choices
 
-# class SalaryApprovalForm(forms.ModelForm):
-#     class Meta:
-#         model = TechnicianInfo
-#         fields = ['salary', 'salary_last_credit']
-
 class SalaryApprovalForm(forms.ModelForm):
     class Meta:
         model = TechnicianInfo
         fields = []
+
+class RemoveVehicleForm(forms.Form):
+    vehicle = forms.ChoiceField(choices=(), widget=forms.Select, label="Select vehicle")
+
+    def __init__(self, *args, **kwargs):
+        vehicle_choices = kwargs.pop('vehicle_choices', [])
+
+        super(RemoveVehicleForm, self).__init__(*args, **kwargs)
+
+        default_option = ('', 'Select...')
+        vehicle_choices = [default_option] + vehicle_choices
+
+        self.fields['vehicle'].choices = vehicle_choices
+
+class DeleteAppointmentForm(forms.Form):
+    appointment = forms.ChoiceField(choices=(), widget=forms.Select, label="Select appointment")
+
+    def __init__(self, *args, **kwargs):
+        appointment_choices = kwargs.pop('appointment_choices', [])
+
+        super(DeleteAppointmentForm, self).__init__(*args, **kwargs)
+
+        default_option = ('', 'Select...')
+        appointment_choices = [default_option] + appointment_choices
+
+        self.fields['appointment'].choices = appointment_choices

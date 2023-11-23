@@ -82,17 +82,17 @@
             <li class="dropdown">
                 <a href="#">Vehicle Details</a>
                 <ul class="dropdown-content">
-                    <li><a href="#">View Vehicle Details</a></li>
+                    <li><a href="{% url 'view_vehicle' %}">View Vehicle Details</a></li>
                     <li><a href="{% url 'add_vehicle' %}">Add Vehicle Details</a></li>
-                    <li><a href="#">Remove Vehicle Details</a></li>
+                    <li><a href="{% url 'remove_vehicle' %}">Remove Vehicle Details</a></li>
                 </ul>
             </li>
             <li class="dropdown">
                 <a href="#">Appointments</a>
                 <ul class="dropdown-content">
                     <li><a href="{% url 'book_appointment' %}">Book Appointment</a></li>
-                    <li><a href="#">View Appointments</a></li>
-                    <li><a href="#">Delete Appointment</a></li>
+                    <li><a href="{% url 'view_appointments' %}">View Appointments</a></li>
+                    <li><a href="{% url 'delete_appointment' %}">Delete Appointment</a></li>
                 </ul>
             </li>
             <!-- Add the logout button -->

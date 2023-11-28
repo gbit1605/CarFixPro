@@ -1,5 +1,5 @@
 # CarFixPro
-CarFixPro: Transforming your Automotive Repair and Maintenance Journey
+**CarFixPro: Transforming your Automotive Repair and Maintenance Journey**
 
 We recognized a prevalent challenge within the automotive repair industry in the United States, where customers often face inconvenience, wasted time, and uncertainty when seeking car repairs. To address this issue, we have conceived a versatile web application, CarFixPro, designed to empower individual car repair shops. Our solution enables these businesses to offer online appointment scheduling, streamlining the customer experience and enhancing operational efficiency.
 

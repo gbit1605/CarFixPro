@@ -11,7 +11,8 @@ from passlib.hash import pbkdf2_sha256
 def index(request):
     if request.method == 'POST':
         customer_registration_form = CustomerRegistrationForm(request.POST)
-
+        print("***")
+        print("^^^")
         if customer_registration_form.is_valid():
             cinfo = CustomerInfo(fname=customer_registration_form.cleaned_data['first_name'],
                                  lname=customer_registration_form.cleaned_data['last_name'],

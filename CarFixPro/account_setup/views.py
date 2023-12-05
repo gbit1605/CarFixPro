@@ -22,7 +22,7 @@ def index(request):
                                  passwd=pbkdf2_sha256.encrypt(customer_registration_form.cleaned_data['password'], rounds=12000, salt_size=32))
             cinfo.save()
 
-            return HttpResponseRedirect("/thank-you")
+            return HttpResponseRedirect("/customer_thank_you")
 
     else:
         customer_registration_form = CustomerRegistrationForm()
@@ -33,6 +33,12 @@ def index(request):
 
 def thank_you(request):
     return render(request, 'account_setup/thank_you.html')
+
+def customer_thank_you(request):
+    return render(request, 'account_setup/customer_thank_you.html')
+
+def customer_dashboard_thank_you(request):
+    return render(request, 'account_setup/customer_dashboard_thank_you.html')
 
 def customer_login(request):
     if request.method == 'POST':
@@ -121,7 +127,7 @@ def book_appointment(request):
                             customer_email = CustomerInfo.objects.get(email_id=user_email))
             ainfo.save()
 
-            return HttpResponseRedirect("/thank-you")
+            return HttpResponseRedirect("/customer_dashboard_thank_you")
 
     else:
         book_appointment_form = BookAppointment(vehicle_choices=vehicle_details_dropdown, location_choices=location_details_dropdown)
@@ -148,7 +154,7 @@ def add_vehicle(request):
                             customer_email = CustomerInfo.objects.get(email_id=user_email))
             vinfo.save()
 
-            return HttpResponseRedirect("/thank-you")
+            return HttpResponseRedirect("/customer_dashboard_thank_you")
 
     else:
         vehicle_registration_form = AddVehicleForm()

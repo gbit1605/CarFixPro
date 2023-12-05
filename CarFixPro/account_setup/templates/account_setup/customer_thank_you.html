@@ -1,4 +1,4 @@
-{% extends "base_after_logging_manager.html" %}
+{% extends "base.html" %}
 
 {% block page_title %}Thank you!{% endblock %}
 
@@ -39,7 +39,8 @@
     <div class="thank-you-body">
         <div class="thank-you-container">
             <h2 class="success-message">Success!</h2>
-            <p class="thank-you-description">Your details have been captured</p>
+            <p class="thank-you-description">You are now registered</p>
+            <a href="{% url 'customer_login' %}" class="register-button">Login</a>
         </div>
     </div>
 {% endblock %}

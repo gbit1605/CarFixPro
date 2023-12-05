@@ -81,7 +81,7 @@ def book_appointment(request):
     user_email = request.session.get('user_email', None)
     if user_email == None:
         return HttpResponseRedirect("/customer_login")
-    customer_vehicle_objects = Vehicle.objects.filter(email_id=user_email)
+    customer_vehicle_objects = Vehicle.objects.filter(customer_email=user_email)
     location_objects = Location.objects.all()
     service_objects = Service.objects.all()
     vehicle_details, location_details, serivces_details = [], [], []

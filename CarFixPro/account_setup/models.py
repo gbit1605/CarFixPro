@@ -21,6 +21,9 @@ class CustomerInfo(models.Model):
 
     def verify_password(self, p):
         return pbkdf2_sha256.verify(p, self.passwd)
+    
+    def __str__(self):
+        return f"{self.fname} {self.lname}"
 
 class Vehicle(models.Model):
 
@@ -40,11 +43,17 @@ class Vehicle(models.Model):
     mfg_company = models.CharField(max_length=20)
     vtype = models.CharField(max_length=10, choices=CHOICES, null=False)
 
+    def __str__(self):
+        return f"{self.vin} {self.mfg_company} {self.model}"
+
 class Location(models.Model):
     location_id = models.AutoField(primary_key=True)
     address = models.CharField(max_length=30)
     state = models.CharField(max_length=2)
     pincode = models.CharField(max_length=5)
+
+    def __str__(self):
+        return f"{self.address} {self.state} {self.pincode}"
 
 class Service(models.Model):
 
@@ -69,6 +78,9 @@ class Service(models.Model):
             models.UniqueConstraint(fields=['service_type', 'vehicle_type'], name='composite_pk')
         ]
 
+    def __str__(self):
+        return f"{self.vehicle_type} {self.service_type} - ${self.price}"
+
 
 class Appointment(models.Model):
 
@@ -82,6 +94,9 @@ class Appointment(models.Model):
     total_price = models.DecimalField(decimal_places=2, max_digits=8)
     manager_start_approval = models.BooleanField(default=False)
     manager_finish_approval = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.appointment_id} {self.customer_email} {self.date}"
 
 class ManagerInfo(models.Model):
     fname = models.CharField(max_length=30)
@@ -97,6 +112,9 @@ class ManagerInfo(models.Model):
 
     def verify_password(self, p):
         return pbkdf2_sha256.verify(p, self.passwd)
+    
+    def __str__(self):
+        return f"{self.fname} {self.lname}"
 
 class TechnicianInfo(models.Model):
     SSN = models.CharField(max_length=9, validators=[MinLengthValidator(9), MaxLengthValidator(9)])
@@ -121,15 +139,24 @@ class TechnicianInfo(models.Model):
     def verify_password(self, p):
         return pbkdf2_sha256.verify(p, self.passwd)
     
+    def __str__(self):
+        return f"{self.fname} {self.lname}"
+    
 class TechnicianSkills(models.Model):
     email_id = models.ForeignKey(TechnicianInfo, on_delete=models.CASCADE, null=False)
     service_type = models.CharField(max_length=30)
+
+    def __str__(self):
+        return f"{self.email_id} {self.service_type}"
 
 class AppointmentStatus(models.Model):
     appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
     service_detail = models.CharField(max_length=250)
     completed = models.BooleanField(default=False)
     completed_by_technician = models.ForeignKey(TechnicianInfo, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return f"{self.appointment.appointment_id} {self.service_detail}"
 
 @receiver(post_save, sender=Appointment)
 def create_appointment_status(sender, instance, created, **kwargs):

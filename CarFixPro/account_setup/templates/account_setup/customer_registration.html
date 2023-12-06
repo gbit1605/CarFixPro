@@ -6,40 +6,39 @@
     <style>
         body {
             background-color: #f2f2f2;
-            font-family: 'Open Sans', sans-serif;
+            font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            flex-direction: column; /* Center elements in a column */
-        }
-
-        .carfixpro-heading {
-            font-size: 3em; /* Adjust the font size as needed */
-            color: navy;
-            margin-bottom: 20px; /* Add some space below the heading */
         }
 
         .registration-container {
             text-align: center;
-        }
-
-        .registration-heading {
-            color: navy;
-        }
-
-        .registration-form {
-            background-color: #ffffff;
+            background-color: #fff;
             border-radius: 8px;
             padding: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 300px;
         }
 
+        .sign {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
         .form-control {
             margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
         }
 
         input {
@@ -51,11 +50,12 @@
         }
 
         .errors {
-            color: red;
+            color: #ff0000;
+            font-size: 0.8em;
             margin-top: 5px;
         }
 
-        button.submit-button {
+        .submit-button {
             background-color: navy;
             color: #fff;
             padding: 10px 15px;
@@ -64,21 +64,27 @@
             cursor: pointer;
         }
 
-        button.submit-button:hover {
-            background-color: #001f3f;
+        .submit-button:hover {
+            background-color: #45a049;
+        }
+
+        .carfixpro-heading {
+            font-size: 2em; /* Adjust the font size as needed */
+            color: navy;
+            margin-bottom: 20px; /* Add some space below the heading */
         }
     </style>
 
     <div class="registration-container">
         <h1 class="carfixpro-heading">CarFixPro</h1>
-        <h2 class="registration-heading">Account Registration</h2>
+        <h2 class="sign">Sign Up</h2>
         <form method="POST" class="registration-form">
             {% csrf_token %}
             {% for field in form %}
                 <div class="form-control {% if field.errors %}errors{% endif %}">
-                    {{ field.label_tag|safe }}
+                    <label for="{{ field.id_for_label }}">{{ field.label_tag }}</label>
                     {{ field }}
-                    {{ field.errors }}
+                    <div class="errors">{{ field.errors }}</div>
                 </div>
             {% endfor %}
             <button type="submit" class="submit-button">Submit</button>
